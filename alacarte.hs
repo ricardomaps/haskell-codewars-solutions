@@ -81,9 +81,9 @@ instance (Functor f, Functor g) =>  f :<: (f :+: g) where
 
 instance (Functor f, Functor g, Functor h, f :<: g) => f :<: (h :+: g) where
   inj = Inr . (inj :: f a -> g a)
-  
+
 -- Note: This part requires overlapping instances, this is safe as long as :+: associates to the right.
--- A modern implementation would use type families. 
+-- A modern implementation would use type families.
 
 -- Then we can use this type class to write smart constructors.
 
