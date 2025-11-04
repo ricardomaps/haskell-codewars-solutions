@@ -32,13 +32,13 @@ type Term a = forall r h . Language r => r h a
 newtype Lang h a = Lang { run :: h -> a }
 
 instance Language Lang where
-  here     = Lang (\(a, _) -> a)
+  here     = Lang fst
   before r = Lang (\(_, h') -> let a = run r h' in a)
-  lambda r = Lang (\h -> \a -> run r (a, h))
+  lambda r = Lang (\h a -> run r (a, h))
   apply rf r = Lang (\h -> let f = run rf h; a = run r h in f a)
   loop rf = Lang (\h -> let f = run rf h in fix f)
-  int n = Lang (\_ -> n)
-  bool b = Lang (\_ -> b)
+  int n = Lang (const n)
+  bool b = Lang (const b)
   add r1 r2 = Lang (\h -> let x1 = run r1 h; x2 = run r2 h in x1 + x2)
   down r = Lang (\h -> let x = run r h in x-1)
   up r = Lang (\h -> let x = run r h in x+1)
