@@ -105,7 +105,7 @@ instance Nat Peano where
 -- Try to use operation specific to list.
 instance Nat [()] where
   zero              = []
-  successor         = (():)
+  successor         = (:) ()
   nat o _ []        = o
   nat _ s (_:l)     = s l
 -- Instead of defining Nat from zero, sucessor (and get Peano),
@@ -127,8 +127,16 @@ instance Nat Scott where
 newtype Church = Church { runChurch :: forall a. (a -> a) -> a -> a }
 instance Nat Church where
   zero = Church (\_ z -> z)
-  successor n = Church (\s z -> s (runChurch n s z))
-  nat o s n = runChurch n (\a -> case nat Nothing Just a of Nothing -> s zero; Just m -> Church (\ -> s m)) o
+  successor n = Church (\s z -> s $ runChurch n s z)
+  nat :: a -> (Church -> a) -> Church -> a -- Pattern Matching
+  nat o s n =
+    case runChurch n S O of
+      O -> o
+      S n -> s $ ana n
+    where
+      ana O = zero
+      ana (S n) = successor (ana n)
+    
   -- Try to implement the calculation (except minus) in the primitive way.
   -- Implement them by constructing Church explicitly.
   -- So plus should not use successor,
@@ -136,3 +144,4 @@ instance Nat Church where
   -- exp should not use mult.
   plus n m = Church (\s z -> runChurch n s (runChurch m s z))
   mult n m = Church (\s z -> runChurch n (\a -> runChurch m s a) z)
+  pow n m = Church (runChurch m (runChurch n))
